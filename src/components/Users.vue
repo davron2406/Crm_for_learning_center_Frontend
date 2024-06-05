@@ -3,81 +3,91 @@
         <div class="home__main__name">
            Users
          </div>
+         
+         
 
-        <div class="table-container">
-            <div class="input-wrapper search-input-wrapper">
-                <input type="text" class="input" placeholder="Enter user email to search" v-model="email" @change="searchPayment()">
-                <p class="placeholder search-placeholder">User email</p>
-            </div>
-
-            <nav class="table-menu" id="table-menu">
-                <router-link class="table-menu-item" to="/users/allUsers">
-                    <p>All Users</p>
-                </router-link>
-                <router-link class="table-menu-item" to="/users/activeUsers">
-                    <p>Active users</p>
-                </router-link>
-                <router-link class="table-menu-item" to="/users/debtorUsers">
-                    <p>Debtor Users</p>
-                </router-link>
-                <router-link class="table-menu-item" to="/users/blockedUsers">
-                    <p>Blocked Users</p>
-                </router-link>
-                <router-link class="table-menu-item" to="/users/newUsers">
-                    <p>New Users</p>
-                </router-link>
-            </nav>
-
-            <table class="table">
-                <thead class="table-header">
-                    <tr class="table-header-row">
-                        <th>Company</th>
-                        <th>Contact</th>
-                        <th>Country</th>
-                        <th>Country</th>
-                        <th>Country</th>
-                    </tr>
-                </thead>
-                    
-                <tbody class="table-body">
-                    <tr v-for="user in users" class="table-body-row">
-                        <td>{{user[0]}}</td>
-                        <td>{{user[2]}}</td>
-                        <td>uzbekistan </td>
-                        <td>Country</td>
-                        <td>Country</td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
-
-        <div class="table-control">
-                <button class="backward-button" @click="backward()">
-                    <span class="material-icons">
-                        arrow_back_ios
-                    </span>
-                </button>     
-                        
-                <div class="table-info">
-                    <p>{{ this.pageNumber + 1}}/{{ this.totalPages }}</p>
+            <div class="table-container">
+                <div class="input-wrapper search-input-wrapper">
+                    <input type="text" class="input" placeholder="Enter user email to search" v-model="email" @change="searchPayment()">
+                    <p class="placeholder search-placeholder">User email</p>
                 </div>
 
-                <button class="forward-button" @click="forward()">
-                    <span class="material-icons">
-                        arrow_forward_ios
-                    </span>
-                </button>
-        </div>    
+                <nav class="table-menu" id="table-menu">
+                    <li class="table-menu-item" :class="{active: this.status === -1}" @click="sortUsers(-1)">
+                        <p>All Users</p>
+                    </li>
+                    <li class="table-menu-item" :class="{active: this.status === 1 }"  @click="sortUsers(1)">
+                        <p>Active Users</p>
+                    </li>
+                    <li class="table-menu-item"  :class="{active: this.status === 2}"  @click="sortUsers(2)">
+                        <p>New Users</p>
+                    </li>
+                    <li class="table-menu-item" :class="{active: this.status === 3}"  @click="sortUsers(3)">
+                        <p>Debtor Users</p>
+                    </li>
+                    <li class="table-menu-item" :class="{active: this.status === 0}"  @click="sortUsers(0)">
+                        <p>Blocked Users</p>
+                    </li>
+                    
+                </nav>
 
-        <div>
-            <button class="add-button">Add User</button>
-        </div>  
+                <table class="table">
+                    <thead class="table-header">
+                        <tr class="table-header-row">
+                            <th>Full Name</th>
+                            <th>Email</th>
+                            <th>Settings</th>
+                        </tr>
+                    </thead>
+                        
+                    <tbody class="table-body">
+                        <tr v-for="user in users" class="table-body-row">
+                            <td>{{user[0]}}</td>
+                            <td>{{user[2]}}</td>
+                            <td>
+                                <button class="delete-button">
+                                    <span class="material-icons">delete</span>
+                                </button>
+                                <button class="delete-button" @click="blockUser(user[3])">
+                                    <span class="material-icons">block</span>
+                                </button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div class="table-control">
+                    <button class="backward-button" @click="backward()">
+                        <span class="material-icons">
+                            arrow_back_ios
+                        </span>
+                    </button>     
+                            
+                    <div class="table-info">
+                        <p>{{ this.pageNumber + 1}}/{{ this.totalPages }}</p>
+                    </div>
+
+                    <button class="forward-button">
+                        <span class="material-icons">
+                            arrow_forward_ios
+                        </span>
+                    </button>
+                </div>   
+            </div>
+
+          <ConfirmModal message='are you sure to block user'></ConfirmModal>
+
+            <div>
+                <button class="add-button">Add User</button>
+            </div> 
+
+        
     </div>
 </template>
 
 <script>
-
 import axios from 'axios'
+import ConfirmModal from './ConfirmModal.vue'
     export default{
        data() {
         return{
@@ -85,15 +95,30 @@ import axios from 'axios'
             defaultPageSize : 10,
             pageNumber : 0,
             totalPages : 0,
+            status: -1,
         }
+       },
+       components:{
+        ConfirmModal
        },
 
        methods:{
+            sortUsers(status){
+                this.status = status;
+                console.log(this.status)
+                this.getUsers(this.defaultPageSize,0)
+            },
+
             async getUsers( pageSize,  pageNumber){
-              let response = await axios.get("http://localhost:8080/api/user?pageSize="+pageSize+"&pageNumber="+pageNumber, {headers: { "Authorization": "Bearer " + localStorage.getItem("token")}})
-              this.pageNumber = response.data.pageable.pageNumber;
-              this.totalPages = response.data.totalPages
-              this.users = response.data.content;
+                const response = await axios.get("http://localhost:8080/api/user/" + this.status + "?pageSize="+pageSize+"&pageNumber="+pageNumber, {headers: { "Authorization": "Bearer " + localStorage.getItem("token")}}) 
+                this.pageNumber = response.data.pageable.pageNumber;
+                this.totalPages = response.data.totalPages
+                this.users = response.data.content;
+            },
+
+            async blockUser(userId){
+                const response = await axios.get("http://localhost:8080/api/user/blockUser/" + userId, {headers: { "Authorization": "Bearer " + localStorage.getItem("token")}})
+                console.log(response);
             },
 
             forward(){
@@ -107,10 +132,11 @@ import axios from 'axios'
                     this.pageNumber--;
                     this.getUsers(this.defaultPageSize, this.pageNumber);
                 }
-            },  
+            },
        },
 
        created: function(){
+            console.log(this.$route.fullPath);
             this.getUsers(this.defaultPageSize,this.pageNumber);
        }
     }
@@ -159,7 +185,7 @@ import axios from 'axios'
     text-decoration: none;
 }
 
-.table-menu-item.router-link-exact-active{
+.active{
     color: hsl(260, 100%, 80%);
 	text-shadow: 0 0 3px hsla(260, 100%, 70%, 0.7);
 }
@@ -182,5 +208,9 @@ import axios from 'axios'
 	color: inherit;
 	text-decoration: none;
 	padding: 1ch;
+}
+
+.delete-button{
+    color: red;
 }
 </style>

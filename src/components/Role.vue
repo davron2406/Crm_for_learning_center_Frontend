@@ -26,7 +26,9 @@
                                 {{ role.permissions.toString() }} 
                             </div>
                         </td>
-                        <td><button class="delete"><span class="material-icons">delete</span></button></td>
+                        <td>
+                            <button class="delete"><span class="material-icons">delete</span>
+                            </button></td>
                     </tr>
                 </tbody>
             </table>

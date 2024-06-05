@@ -12,8 +12,6 @@ import GroupInfoForTeacher from '../components/GroupInfoForTeacher.vue'
 import UserAttendance from '../components/UserAttendance.vue'
 import Payments from '../components/Payments.vue'
 
-
-
 const routes = [
 
     {
